@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\WebApplication-EVENTEASE-ST10448895.props" />
+</Project>
