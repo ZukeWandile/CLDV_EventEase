@@ -19,8 +19,18 @@ namespace WebApplication_EVENTEASE_ST10448895.Models
         [StringLength(250)]
         public string Descriptions { get; set; }
 
-        [ForeignKey("Venue")]
+        [Required(ErrorMessage = "Venue selection is required.")]
         public int? Venue_ID { get; set; }
-        public Venue? Venue { get; set; }
+
+        [ForeignKey("Venue_ID")]
+        public Venue? Venue { get; set; } // allow nulls
+
+        // New Foreign Key for EventType
+        public int? EventTypeID { get; set; }
+
+        [ForeignKey("EventTypeID")]
+        public EventType? EventType { get; set; }
+
+
     }
 }

@@ -15,14 +15,24 @@ namespace WebApplication_EVENTEASE_ST10448895.Controllers
         }
 
         // GET: Bookings
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            var bookings = await _context.Bookings
+            var bookings = _context.Bookings
                 .Include(b => b.Venue)
                 .Include(b => b.EventS)
-                .ToListAsync();
-            return View(bookings);
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                bookings = bookings.Where(b =>
+                    b.EventS.Event_Name.Contains(searchString) ||
+                    b.Venue.Venue_Name.Contains(searchString) ||
+                    b.Booking_ID.ToString().Contains(searchString));
+            }
+
+            return View(await bookings.ToListAsync());
         }
+
 
         // GET: Bookings/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -53,22 +63,43 @@ namespace WebApplication_EVENTEASE_ST10448895.Controllers
             return View();
         }
 
+
         // POST: Bookings/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Bookings bookings)
         {
             if (ModelState.IsValid)
             {
-                if (bookings.Venue_ID == null || bookings.Event_ID == null)
+                if (bookings.Venue_ID == null || bookings.Event_ID == 0)
                 {
                     ModelState.AddModelError("", "Please select both Venue and Event.");
                 }
                 else
                 {
-                    _context.Bookings.Add(bookings);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
+                    var selectedEventDate = await _context.EventS
+                        .Where(e => e.Event_ID == bookings.Event_ID)
+                        .Select(e => e.Event_Date)
+                        .FirstOrDefaultAsync();
+
+                    bool isDoubleBooked = await _context.Bookings
+                        .Include(b => b.EventS)
+                        .AnyAsync(b =>
+                            b.Venue_ID == bookings.Venue_ID &&
+                            b.EventS.Event_Date == selectedEventDate);
+
+                    if (isDoubleBooked)
+                    {
+                        ModelState.AddModelError("", "This venue is already booked for the selected date and time.");
+                    }
+                    else
+                    {
+                        _context.Bookings.Add(bookings);
+                        await _context.SaveChangesAsync();
+
+                        
+                        TempData["SuccessMessage"] = "Booking created successfully!";
+                        return RedirectToAction(nameof(Create));
+                    }
                 }
             }
 
@@ -76,6 +107,8 @@ namespace WebApplication_EVENTEASE_ST10448895.Controllers
             ViewBag.Event_ID = new SelectList(_context.EventS, "Event_ID", "Event_Name", bookings.Event_ID);
             return View(bookings);
         }
+
+
 
         // GET: Bookings/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -113,31 +146,55 @@ namespace WebApplication_EVENTEASE_ST10448895.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(bookings);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!BookingExists(bookings.Booking_ID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                var selectedEventDate = await _context.EventS
+                    .Where(e => e.Event_ID == bookings.Event_ID)
+                    .Select(e => e.Event_Date)
+                    .FirstOrDefaultAsync();
 
-                return RedirectToAction(nameof(Index));
+                bool isDoubleBooked = await _context.Bookings
+                    .Include(b => b.EventS)
+                    .AnyAsync(b =>
+                        b.Venue_ID == bookings.Venue_ID &&
+                        b.EventS.Event_Date == selectedEventDate &&
+                        b.Booking_ID != bookings.Booking_ID); // exclude current booking
+
+                if (isDoubleBooked)
+                {
+                    ModelState.AddModelError(string.Empty, "This venue is already booked for the selected date and time.");
+                }
+                else
+                {
+                    try
+                    {
+                        _context.Update(bookings);
+                        await _context.SaveChangesAsync();
+
+                        
+                        TempData["SuccessMessage"] = "Booking updated successfully!";
+
+                        return RedirectToAction(nameof(Edit), new { id = bookings.Booking_ID }); // Redirect to same edit page
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        if (!_context.Bookings.Any(e => e.Booking_ID == bookings.Booking_ID))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                }
             }
 
             ViewBag.Venue_ID = new SelectList(_context.Venue, "Venue_ID", "Venue_Name", bookings.Venue_ID);
             ViewBag.Event_ID = new SelectList(_context.EventS, "Event_ID", "Event_Name", bookings.Event_ID);
-
             return View(bookings);
         }
+
+
+
 
         // GET: Bookings/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -170,10 +227,14 @@ namespace WebApplication_EVENTEASE_ST10448895.Controllers
             {
                 _context.Bookings.Remove(bookings);
                 await _context.SaveChangesAsync();
+
+               
+                TempData["SuccessMessage"] = "Booking deleted successfully!";
             }
 
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool BookingExists(int id)
         {

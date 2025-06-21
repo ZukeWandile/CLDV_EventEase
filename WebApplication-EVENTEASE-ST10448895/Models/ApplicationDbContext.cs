@@ -14,5 +14,18 @@ namespace WebApplication_EVENTEASE_ST10448895.Models
         public DbSet<EventS> EventS { get; set; }
 
         public DbSet<Venue> Venue { get; set; }
+
+        public DbSet<BookingDetailsView> BookingDetailsView { get; set; }
+
+        public DbSet<EventType> EventType { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<BookingDetailsView>()
+                .HasNoKey()
+                .ToView("vwBookingDetails");
+        }
     }
 }

@@ -6,6 +6,21 @@
 
 <h1>Bookings</h1>
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+
+<form asp-action="Index" method="get">
+    <div class="form-group">
+        <input type="text" name="searchString" class="form-control" placeholder="Search by Booking ID, Event, or Venue" />
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Search</button>
+    </form>
+
 <p>
     <a asp-action="Create" class="btn btn-primary">Create New Booking</a>
 </p>

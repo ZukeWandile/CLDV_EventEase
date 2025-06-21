@@ -339,3 +339,6 @@ C:\Users\lab_services_student\Desktop\CLDV_EventEase\WebApplication-EVENTEASE-ST
 C:\Users\lab_services_student\Desktop\CLDV_EventEase\WebApplication-EVENTEASE-ST10448895\obj\Debug\net9.0\WebApplication-EVENTEASE-ST10448895.pdb
 C:\Users\lab_services_student\Desktop\CLDV_EventEase\WebApplication-EVENTEASE-ST10448895\obj\Debug\net9.0\WebApplication-EVENTEASE-ST10448895.genruntimeconfig.cache
 C:\Users\lab_services_student\Desktop\CLDV_EventEase\WebApplication-EVENTEASE-ST10448895\obj\Debug\net9.0\ref\WebApplication-EVENTEASE-ST10448895.dll
+C:\Users\lab_services_student\Desktop\CLDV_EventEase\WebApplication-EVENTEASE-ST10448895\bin\Debug\net9.0\Azure.Storage.Blobs.dll
+C:\Users\lab_services_student\Desktop\CLDV_EventEase\WebApplication-EVENTEASE-ST10448895\bin\Debug\net9.0\Azure.Storage.Common.dll
+C:\Users\lab_services_student\Desktop\CLDV_EventEase\WebApplication-EVENTEASE-ST10448895\bin\Debug\net9.0\System.IO.Hashing.dll
